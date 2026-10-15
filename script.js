@@ -10,7 +10,7 @@ const ABA_CART = "Carteira"; // colunas: ativo | categoria | quantidade | preco_
    tipo = Receita, Despesa ou Investimento */
 
 const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
-const brl = v => "R$ " + Math.round(v).toLocaleString("pt-BR");
+const brl = v => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 let dados = [], carteira = [], charts = {};
 const DEMO_CART = [
   { ativo: "Tesouro Selic", categoria: "Renda fixa", qtd: 1, pm: 2600, cot: 2790 },
@@ -171,7 +171,21 @@ function render() {
 
 function desenhar(id, cfg) {
   charts[id]?.destroy();
-  cfg.options = { responsive: true, maintainAspectRatio: false, ...cfg.options };
+  cfg.options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    ...cfg.options,
+    plugins: {
+      ...cfg.options?.plugins,
+      tooltip: {
+        ...cfg.options?.plugins?.tooltip,
+        callbacks: {
+          ...cfg.options?.plugins?.tooltip?.callbacks,
+          label: context => `${context.dataset.label || context.label}: ${brl(context.parsed.y ?? context.parsed)}`
+        }
+      }
+    }
+  };
   charts[id] = new Chart(document.getElementById(id), cfg);
 }
 
